@@ -1,8 +1,6 @@
 FROM nginx:1.20-alpine
 
-# Add a non-root user to run nginx
-RUN addgroup -g 101 -S nginx \
-    && adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx
+# The nginx user and group are already provided in the base image
 
 # Create necessary directories with proper permissions
 RUN mkdir -p /var/cache/nginx /var/log/nginx \

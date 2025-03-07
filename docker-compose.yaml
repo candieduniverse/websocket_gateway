@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  websocket-server:
+    build:
+      context: ./server
+    container_name: websocket-server
+    ports:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+    networks:
+      - websocket-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  nginx-proxy:
+    build:
+      context: ./nginx
+    container_name: nginx-proxy
+    ports:
+      - "8080:8080"
+    depends_on:
+      - websocket-server
+    networks:
+      - websocket-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+networks:
+  websocket-network:
+    driver: bridge
+
